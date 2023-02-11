@@ -13,12 +13,12 @@ OUT := $(shell pwd)/_out
 KUBE_VERSION=1.25.0
 
 $(shell mkdir -p "$(OUT)")
-export TEST_ASSET_ETCD=_test/kubebuilder/etcd
-export TEST_ASSET_KUBE_APISERVER=_test/kubebuilder/kube-apiserver
-export TEST_ASSET_KUBECTL=_test/kubebuilder/kubectl
+export TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
+export TEST_ASSET_KUBE_APISERVER=$(CURDIR)/_test/kubebuilder/kube-apiserver
+export TEST_ASSET_KUBECTL=$(CURDIR)/_test/kubebuilder/kubectl
 
 test: _test/kubebuilder
-	$(GO) test -v .
+	$(GO) test -v ./cmd/webhook/
 
 _test/kubebuilder:
 	curl -fsSL https://go.kubebuilder.io/test-tools/$(KUBE_VERSION)/$(OS)/$(ARCH) -o kubebuilder-tools.tar.gz
