@@ -110,7 +110,7 @@ func (updater acmeUpdater) writeZoneFile(cfg Config, w io.Writer) {
 	}
 }
 
-func readZoneFileHelper(cfg Config) (bool, string) {
+func readZoneFile(cfg Config) (bool, string) {
 	if _, err := os.Stat(cfg.ZoneFile); err != nil {
 		return false, ""
 	}
@@ -139,7 +139,7 @@ func removeTxtRecord(cfg Config) http.Handler {
 
 		updater := acmeUpdater{}
 
-		if ok, zone := readZoneFileHelper(cfg); ok {
+		if ok, zone := readZoneFile(cfg); ok {
 			err = updater.parseZoneFile(zone)
 			if err != nil {
 				log.Fatal("Broken zone file")
@@ -151,9 +151,11 @@ func removeTxtRecord(cfg Config) http.Handler {
 		delete(updater, req.Form.Get("key"))
 		io.WriteString(w, "Remove recored!\n")
 
-		log.Println("Start new zone file")
-		updater.writeZoneFile(cfg, os.Stdout)
-		log.Println("End new zone file")
+		zoneFile, err := os.OpenFile(cfg.ZoneFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			log.Fatalln("Cannot write zone file: ", zoneFile)
+		}
+		updater.writeZoneFile(cfg, zoneFile)
 	})
 }
 
@@ -166,7 +168,7 @@ func addTxtRecord(cfg Config) http.Handler {
 
 		updater := acmeUpdater{}
 
-		if ok, zone := readZoneFileHelper(cfg); ok {
+		if ok, zone := readZoneFile(cfg); ok {
 			err = updater.parseZoneFile(zone)
 			if err != nil {
 				log.Fatal("Broken zone file")
@@ -178,9 +180,11 @@ func addTxtRecord(cfg Config) http.Handler {
 		updater[req.Form.Get("key")] = void{}
 		io.WriteString(w, "Add recored!\n")
 
-		log.Println("Start new zone file")
-		updater.writeZoneFile(cfg, os.Stdout)
-		log.Println("End new zone file")
+		zoneFile, err := os.OpenFile(cfg.ZoneFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			log.Fatalln("Cannot write zone file: ", zoneFile)
+		}
+		updater.writeZoneFile(cfg, zoneFile)
 	})
 }
 

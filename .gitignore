@@ -20,3 +20,4 @@ _test
 
 Makefile.variables
 /config.yaml
+pri.*
