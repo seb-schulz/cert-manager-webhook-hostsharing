@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -20,7 +19,7 @@ _acme-challenge.{DOM_HOSTNAME}. IN TXT "5678"`: acmeUpdater{"1234": void{}},
 
 	for input, expected := range tests {
 		got := acmeUpdater{}
-		if err := got.parseZoneFile(strings.NewReader(input)); err != nil {
+		if err := got.parseZoneFile(input); err != nil {
 			t.Errorf("Failed due to %v", err)
 		}
 
@@ -31,7 +30,7 @@ _acme-challenge.{DOM_HOSTNAME}. IN TXT "5678"`: acmeUpdater{"1234": void{}},
 }
 
 func TestWriteZoneFile(t *testing.T) {
-	cfg := Config{HttpServeType, []string{}, ConfigTmpl{"{DEFAULT_ZONEFILE}"}}
+	cfg := Config{HttpServeType, "pri.example.com", []string{}, ConfigTmpl{"{DEFAULT_ZONEFILE}"}}
 
 	expected := []string{
 		"{DEFAULT_ZONEFILE}\n",
