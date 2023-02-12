@@ -26,7 +26,7 @@ const (
 	FastCGIServeType ServeType = "fastcgi"
 	HttpServeType    ServeType = "http"
 	DefaultTxTRegex  string    = `^_acme-challenge.+IN\s+TXT\s+\"(?P<key>.+)\"\s+;\s+acme-updater`
-	DefaultTxTLine   string    = "_acme-challenge.{DOM_HOSTNAME}. IN TXT %v ; acme-updater"
+	DefaultTxTLine   string    = "_acme-challenge.{DOM_HOSTNAME}. IN TXT \"%v\" ; acme-updater"
 )
 
 const Dummmy string = `{DEFAULT_ZONEFILE}
@@ -36,13 +36,13 @@ _acme-challenge.{DOM_HOSTNAME}. IN TXT "5678" ; acme-updater
 
 type void struct{}
 
-type AcmeUpdater map[string]void
+type acmeUpdater map[string]void
 
 func loadConfig() Config {
 	return Config{HttpServeType, []string{"123"}, ConfigTmpl{"{DEFAULT_ZONEFILE}"}}
 }
 
-func (updater AcmeUpdater) parseZoneFile(reader io.Reader) error {
+func (updater acmeUpdater) parseZoneFile(reader io.Reader) error {
 	r := regexp.MustCompile(DefaultTxTRegex)
 	idx := r.SubexpIndex("key")
 
@@ -60,7 +60,7 @@ func (updater AcmeUpdater) parseZoneFile(reader io.Reader) error {
 	return nil
 }
 
-func (updater AcmeUpdater) writeZoneFile(cfg Config, w io.Writer) {
+func (updater acmeUpdater) writeZoneFile(cfg Config, w io.Writer) {
 	_, err := io.WriteString(w, cfg.Template.Head)
 	if err != nil {
 		panic(err)
@@ -90,7 +90,7 @@ func removeTxtRecord(cfg Config) http.Handler {
 			log.Fatalf("Cannot parse request: %v\n", err)
 		}
 
-		updater := AcmeUpdater{}
+		updater := acmeUpdater{}
 		err = updater.parseZoneFile(strings.NewReader(Dummmy))
 		if err != nil {
 			log.Fatal("Broken zone file")
@@ -113,7 +113,7 @@ func addTxtRecord(cfg Config) http.Handler {
 			log.Fatalf("Cannot parse request: %v\n", err)
 		}
 
-		updater := AcmeUpdater{}
+		updater := acmeUpdater{}
 		err = updater.parseZoneFile(strings.NewReader(Dummmy))
 		if err != nil {
 			log.Fatal("Broken zone file")
