@@ -33,11 +33,6 @@ const (
 	DefaultTemplateHead string    = "{DEFAULT_ZONEFILE}"
 )
 
-const Dummmy string = `{DEFAULT_ZONEFILE}
-_acme-challenge.{DOM_HOSTNAME}. IN TXT "1234" ; acme-updater
-_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678" ; acme-updater
-`
-
 type void struct{}
 
 type acmeUpdater map[string]void
@@ -70,7 +65,7 @@ func loadConfig() Config {
 		panic("No zone file defined")
 	}
 
-	log.Println(cfg)
+	log.Println("Config loaded.")
 	return cfg
 }
 
