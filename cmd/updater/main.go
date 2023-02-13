@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/http/fcgi"
 	"os"
 	"regexp"
 	"strings"
@@ -18,20 +20,15 @@ type ConfigTmpl struct {
 }
 
 type Config struct {
-	Type     ServeType  `yaml:"type"`
 	ZoneFile string     `yaml:"zone-file"`
 	ApiKeys  []string   `yaml:"api-keys"`
 	Template ConfigTmpl `yaml:"template"`
 }
 
-type ServeType string
-
 const (
-	FastCGIServeType    ServeType = "fastcgi"
-	HttpServeType       ServeType = "http"
-	DefaultTxTRegex     string    = `^_acme-challenge.+IN\s+TXT\s+\"(?P<key>.+)\"\s+;\s+acme-updater`
-	DefaultTxTLine      string    = "_acme-challenge.{DOM_HOSTNAME}. IN TXT \"%v\" ; acme-updater"
-	DefaultTemplateHead string    = "{DEFAULT_ZONEFILE}"
+	DefaultTxTRegex     string = `^_acme-challenge.+IN\s+TXT\s+\"(?P<key>.+)\"\s+;\s+acme-updater`
+	DefaultTxTLine      string = "_acme-challenge.{DOM_HOSTNAME}. IN TXT \"%v\" ; acme-updater"
+	DefaultTemplateHead string = "{DEFAULT_ZONEFILE}"
 )
 
 type void struct{}
@@ -39,6 +36,12 @@ type void struct{}
 type bindUpdater struct {
 	config Config
 	keys   map[string]void
+}
+
+func defaultConfig() Config {
+	cfg := Config{}
+	cfg.Template.Head = DefaultTemplateHead
+	return cfg
 }
 
 func loadConfig() Config {
@@ -56,14 +59,14 @@ func loadConfig() Config {
 	if err != nil {
 		panic(err)
 	}
-	cfg := Config{}
+	cfg := defaultConfig()
 	if err := yaml.Unmarshal(content, &cfg); err != nil {
 		panic(err)
 	}
 
-	if cfg.Template.Head == "" {
-		cfg.Template.Head = DefaultTemplateHead
-	}
+	// if cfg.Template.Head == "" {
+	// 	cfg.Template.Head = DefaultTemplateHead
+	// }
 
 	if cfg.ZoneFile == "" {
 		panic("No zone file defined")
@@ -163,13 +166,24 @@ func (updater bindUpdater) Add(key string) error {
 }
 
 func main() {
+	svrType := flag.String("type", "fcgi", "server type")
+	genCfg := flag.Bool("config", false, "Generate config")
+	flag.Parse()
+
+	if *genCfg {
+		out, _ := yaml.Marshal(defaultConfig())
+		fmt.Print(string(out))
+		os.Exit(0)
+	}
 	cfg := loadConfig()
 
-	http.Handle("/acme-txt", hostsharing.UpdateHandler(bindUpdater{config: cfg, keys: map[string]void{}}))
+	handler := hostsharing.UpdateHandler(bindUpdater{config: cfg, keys: map[string]void{}})
 
-	switch cfg.Type {
-	case HttpServeType:
+	switch *svrType {
+	case "http":
+		http.Handle("/acme-txt", handler)
 		log.Fatal(http.ListenAndServe(":9090", nil))
+	case "fcgi":
+		log.Fatal(fcgi.Serve(nil, handler))
 	}
-	log.Println("Hello World")
 }

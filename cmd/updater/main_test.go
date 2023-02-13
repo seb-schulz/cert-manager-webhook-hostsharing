@@ -40,7 +40,7 @@ _acme-challenge.{DOM_HOSTNAME}. IN TXT "5678"`: map[string]void{"1234": void{}},
 }
 
 func TestWriteZoneFile(t *testing.T) {
-	cfg := Config{HttpServeType, "pri.example.com", []string{}, ConfigTmpl{"{DEFAULT_ZONEFILE}"}}
+	cfg := Config{"pri.example.com", []string{}, ConfigTmpl{"{DEFAULT_ZONEFILE}"}}
 
 	expected := []string{
 		"{DEFAULT_ZONEFILE}\n",
