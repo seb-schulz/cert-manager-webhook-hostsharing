@@ -26,16 +26,18 @@ type dnsServer struct {
 	sync.RWMutex
 }
 
-func (e *dnsServer) Add(key string) {
+func (e *dnsServer) Add(key string) error {
 	e.Lock()
 	e.txtRecords[key] = void{}
 	e.Unlock()
+	return nil
 }
 
-func (e *dnsServer) Remove(key string) {
+func (e *dnsServer) Remove(key string) error {
 	e.Lock()
 	delete(e.txtRecords, key)
 	e.Unlock()
+	return nil
 }
 
 func (e *dnsServer) handleDNSRequest(w dns_mock.ResponseWriter, req *dns_mock.Msg) {
