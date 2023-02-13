@@ -6,25 +6,35 @@ import (
 	"testing"
 )
 
+func newBindUpdater(keys []string) bindUpdater {
+	r := bindUpdater{config: Config{}, keys: map[string]void{}}
+
+	for _, v := range keys {
+		r.keys[v] = void{}
+	}
+
+	return r
+}
+
 func TestParseZoneFile(t *testing.T) {
-	tests := map[string]acmeUpdater{
-		"Noop": acmeUpdater{},
+	tests := map[string]map[string]void{
+		"Noop": map[string]void{},
 		`{DEFAULT_ZONEFILE}
 _acme-challenge.{DOM_HOSTNAME}. IN TXT "1234" ; acme-updater
-_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678" ; acme-updater`: acmeUpdater{"1234": void{}, "5678": void{}},
+_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678" ; acme-updater`: map[string]void{"1234": void{}, "5678": void{}},
 		`{DEFAULT_ZONEFILE}
 _acme-challenge.{DOM_HOSTNAME}. IN TXT "1234" ; acme-updater
-_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678"`: acmeUpdater{"1234": void{}},
+_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678"`: map[string]void{"1234": void{}},
 	}
 
 	for input, expected := range tests {
-		got := acmeUpdater{}
-		if err := got.parseZoneFile(input); err != nil {
+		obj := newBindUpdater([]string{})
+		if err := obj.parseZoneFile(input); err != nil {
 			t.Errorf("Failed due to %v", err)
 		}
 
-		if !reflect.DeepEqual(got, expected) {
-			t.Errorf("Expected %v instead of %v", expected, got)
+		if !reflect.DeepEqual(obj.keys, expected) {
+			t.Errorf("Expected %v instead of %v", expected, obj.keys)
 		}
 	}
 }
@@ -37,9 +47,11 @@ func TestWriteZoneFile(t *testing.T) {
 		"{DEFAULT_ZONEFILE}\n_acme-challenge.{DOM_HOSTNAME}. IN TXT \"123\" ; acme-updater\n",
 	}
 
-	for idx, u := range []acmeUpdater{acmeUpdater{}, acmeUpdater{"123": void{}}} {
+	for idx, keys := range [][]string{[]string{}, []string{"123"}} {
 		b := new(bytes.Buffer)
-		u.writeZoneFile(cfg, b)
+		obj := newBindUpdater(keys)
+		obj.config = cfg
+		obj.writeZoneFile(b)
 		// if err := got.parseZoneFile(strings.NewReader(input)); err != nil {
 		// 	t.Errorf("Failed due to %v", err)
 		// }

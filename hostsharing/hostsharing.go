@@ -6,8 +6,8 @@ import (
 )
 
 type Updater interface {
-	Add(key string)
-	Remove(key string)
+	Add(key string) error
+	Remove(key string) error
 }
 
 func removeTxtRecord(updater Updater) http.Handler {

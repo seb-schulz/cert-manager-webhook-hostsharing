@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/seb-schulz/cert-manager-webhook-hostsharing/hostsharing"
 	"gopkg.in/yaml.v3"
 )
 
@@ -35,7 +36,10 @@ const (
 
 type void struct{}
 
-type acmeUpdater map[string]void
+type bindUpdater struct {
+	config Config
+	keys   map[string]void
+}
 
 func loadConfig() Config {
 	wd, err := os.Getwd()
@@ -69,21 +73,21 @@ func loadConfig() Config {
 	return cfg
 }
 
-func (updater acmeUpdater) parseZoneFile(zoneFile string) error {
+func (updater bindUpdater) parseZoneFile(zoneFile string) error {
 	r := regexp.MustCompile(DefaultTxTRegex)
 	idx := r.SubexpIndex("key")
 
 	for _, v := range strings.Split(zoneFile, "\n") {
 		group := r.FindStringSubmatch(v)
 		if len(group) > idx {
-			updater[group[idx]] = void{}
+			updater.keys[group[idx]] = void{}
 		}
 	}
 	return nil
 }
 
-func (updater acmeUpdater) writeZoneFile(cfg Config, w io.Writer) {
-	_, err := io.WriteString(w, cfg.Template.Head)
+func (updater bindUpdater) writeZoneFile(w io.Writer) {
+	_, err := io.WriteString(w, updater.config.Template.Head)
 	if err != nil {
 		panic(err)
 	}
@@ -92,7 +96,7 @@ func (updater acmeUpdater) writeZoneFile(cfg Config, w io.Writer) {
 		panic(err)
 	}
 
-	for key := range updater {
+	for key := range updater.keys {
 		_, err := io.WriteString(w, fmt.Sprintf(DefaultTxTLine, key))
 		if err != nil {
 			panic(err)
@@ -105,12 +109,12 @@ func (updater acmeUpdater) writeZoneFile(cfg Config, w io.Writer) {
 	}
 }
 
-func readZoneFile(cfg Config) (bool, string) {
-	if _, err := os.Stat(cfg.ZoneFile); err != nil {
+func (updater bindUpdater) readZoneFile() (bool, string) {
+	if _, err := os.Stat(updater.config.ZoneFile); err != nil {
 		return false, ""
 	}
 
-	zone, err := os.Open(cfg.ZoneFile)
+	zone, err := os.Open(updater.config.ZoneFile)
 	defer zone.Close()
 	if err != nil {
 		log.Println("Error while opening zone file", err)
@@ -125,87 +129,45 @@ func readZoneFile(cfg Config) (bool, string) {
 	return true, string(result)
 }
 
-func removeTxtRecord(cfg Config) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		err := req.ParseForm()
-		if err != nil {
-			log.Fatalf("Cannot parse request: %v\n", err)
+func (updater bindUpdater) Remove(key string) error {
+	if ok, zone := updater.readZoneFile(); ok {
+		if err := updater.parseZoneFile(zone); err != nil {
+			return err
 		}
+	}
 
-		updater := acmeUpdater{}
+	delete(updater.keys, key)
 
-		if ok, zone := readZoneFile(cfg); ok {
-			err = updater.parseZoneFile(zone)
-			if err != nil {
-				log.Fatal("Broken zone file")
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-		}
-
-		delete(updater, req.Form.Get("key"))
-		io.WriteString(w, "Remove recored!\n")
-
-		zoneFile, err := os.OpenFile(cfg.ZoneFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			log.Fatalln("Cannot write zone file: ", zoneFile)
-		}
-		updater.writeZoneFile(cfg, zoneFile)
-		log.Printf("TXT Record %#v removed.", req.Form.Get("key"))
-	})
+	zoneFile, err := os.OpenFile(updater.config.ZoneFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	updater.writeZoneFile(zoneFile)
+	return nil
 }
 
-func addTxtRecord(cfg Config) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		err := req.ParseForm()
-		if err != nil {
-			log.Fatalf("Cannot parse request: %v\n", err)
+func (updater bindUpdater) Add(key string) error {
+	if ok, zone := updater.readZoneFile(); ok {
+		if err := updater.parseZoneFile(zone); err != nil {
+			return err
 		}
+	}
 
-		updater := acmeUpdater{}
-
-		if ok, zone := readZoneFile(cfg); ok {
-			err = updater.parseZoneFile(zone)
-			if err != nil {
-				log.Fatal("Broken zone file")
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-		}
-
-		updater[req.Form.Get("key")] = void{}
-		io.WriteString(w, "Add recored!\n")
-
-		zoneFile, err := os.OpenFile(cfg.ZoneFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			log.Fatalln("Cannot write zone file: ", zoneFile)
-		}
-		updater.writeZoneFile(cfg, zoneFile)
-		log.Printf("TXT Record %#v added.", req.Form.Get("key"))
-	})
-}
-
-func dispatchRequest(cfg Config, add, remove http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Println("Receive request.")
-		log.Println(req.Method)
-		switch req.Method {
-		case http.MethodPost:
-			add.ServeHTTP(w, req)
-		case http.MethodDelete:
-			remove.ServeHTTP(w, req)
-		default:
-			http.NotFoundHandler()
-		}
-	})
+	updater.keys[key] = void{}
+	zoneFile, err := os.OpenFile(updater.config.ZoneFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	updater.writeZoneFile(zoneFile)
+	return nil
 }
 
 func main() {
-	config := loadConfig()
+	cfg := loadConfig()
 
-	http.Handle("/acme-txt", dispatchRequest(config, addTxtRecord(config), removeTxtRecord(config)))
+	http.Handle("/acme-txt", hostsharing.UpdateHandler(bindUpdater{config: cfg, keys: map[string]void{}}))
 
-	switch config.Type {
+	switch cfg.Type {
 	case HttpServeType:
 		log.Fatal(http.ListenAndServe(":9090", nil))
 	}
