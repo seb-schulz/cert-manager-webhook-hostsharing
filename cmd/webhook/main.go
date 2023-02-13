@@ -85,9 +85,7 @@ func (c *hostsharingDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	url := fmt.Sprintf("%s/acme-txt?key=%s", cfg.BaseUrl, ch.Key)
-	log.Println("Send POST to ", url)
-
+	url := fmt.Sprintf("%s?key=%s", cfg.BaseUrl, ch.Key)
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		log.Println("Failed to prepare request: ", err)
@@ -117,7 +115,7 @@ func (c *hostsharingDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/acme-txt?key=%s", cfg.BaseUrl, ch.Key), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s?key=%s", cfg.BaseUrl, ch.Key), nil)
 	if err != nil {
 		fmt.Println("Failed to prepare request: ", err)
 	}
@@ -158,8 +156,6 @@ func (c *hostsharingDNSSolver) Initialize(kubeClientConfig *rest.Config, stopCh 
 	return nil
 }
 
-// loadConfig is a small helper function that decodes JSON configuration into
-// the typed config struct.
 func loadConfig(cfgJSON *extapi.JSON) (customConfig, error) {
 	cfg := customConfig{}
 	// handle the 'base case' where no configuration has been provided

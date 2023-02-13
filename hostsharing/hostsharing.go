@@ -1,68 +1,48 @@
-// package example contains a self-contained example of a webhook that passes the cert-manager
-// DNS conformance tests
 package hostsharing
 
 import (
-	"fmt"
-	"os"
-	"sync"
-
-	"github.com/cert-manager/cert-manager/pkg/acme/webhook"
-	acme "github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
-	"github.com/miekg/dns"
-	"k8s.io/client-go/rest"
+	"log"
+	"net/http"
 )
 
-type exampleSolver struct {
-	name       string
-	server     *dns.Server
-	txtRecords map[string]string
-	sync.RWMutex
+type Updater interface {
+	Add(key string)
+	Remove(key string)
 }
 
-func (e *exampleSolver) Name() string {
-	return e.name
-}
-
-func (e *exampleSolver) Present(ch *acme.ChallengeRequest) error {
-	e.Lock()
-	e.txtRecords[ch.ResolvedFQDN] = ch.Key
-	e.Unlock()
-	return nil
-}
-
-func (e *exampleSolver) CleanUp(ch *acme.ChallengeRequest) error {
-	e.Lock()
-	delete(e.txtRecords, ch.ResolvedFQDN)
-	e.Unlock()
-	return nil
-}
-
-func (e *exampleSolver) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
-	go func(done <-chan struct{}) {
-		<-done
-		if err := e.server.Shutdown(); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+func removeTxtRecord(updater Updater) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		err := req.ParseForm()
+		if err != nil {
+			log.Fatalf("Cannot parse request: %v\n", err)
 		}
-	}(stopCh)
-	go func() {
-		if err := e.server.ListenAndServe(); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-			os.Exit(1)
-		}
-	}()
-	return nil
+		updater.Remove(req.Form.Get("key"))
+		log.Printf("TXT Record %#v removed.", req.Form.Get("key"))
+	})
 }
 
-func New(port string) webhook.Solver {
-	e := &exampleSolver{
-		name:       "example",
-		txtRecords: make(map[string]string),
-	}
-	e.server = &dns.Server{
-		Addr:    ":" + port,
-		Net:     "udp",
-		Handler: dns.HandlerFunc(e.handleDNSRequest),
-	}
-	return e
+func addTxtRecord(updater Updater) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		err := req.ParseForm()
+		if err != nil {
+			log.Fatalf("Cannot parse request: %v\n", err)
+		}
+
+		updater.Add(req.Form.Get("key"))
+		log.Printf("TXT Record %#v added.", req.Form.Get("key"))
+	})
+}
+
+func UpdateHandler(u Updater) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		log.Println("Receive request.")
+		switch req.Method {
+		case http.MethodPost:
+			addTxtRecord(u).ServeHTTP(w, req)
+		case http.MethodDelete:
+			removeTxtRecord(u).ServeHTTP(w, req)
+		default:
+			http.NotFoundHandler()
+		}
+	})
 }

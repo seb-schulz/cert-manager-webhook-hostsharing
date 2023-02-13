@@ -1,0 +1,8 @@
+{
+    "go.testEnvVars": {
+        "TEST_ASSET_ETCD": "${workspaceFolder}/_test/kubebuilder/etcd",
+        "TEST_ASSET_KUBE_APISERVER": "${workspaceFolder}/_test/kubebuilder/kube-apiserver",
+        "TEST_ASSET_KUBECTL": "${workspaceFolder}/_test/kubebuilder/kubectl",
+        "TEST_ZONE_NAME": "example.com."
+    }
+}

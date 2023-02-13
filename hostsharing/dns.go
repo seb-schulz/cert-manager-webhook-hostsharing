@@ -2,9 +2,17 @@ package hostsharing
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/miekg/dns"
 )
+
+type exampleSolver struct {
+	name       string
+	server     *dns.Server
+	txtRecords map[string]string
+	sync.RWMutex
+}
 
 func (e *exampleSolver) handleDNSRequest(w dns.ResponseWriter, req *dns.Msg) {
 	msg := new(dns.Msg)
