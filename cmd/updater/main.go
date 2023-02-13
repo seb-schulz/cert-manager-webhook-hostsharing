@@ -151,6 +151,7 @@ func removeTxtRecord(cfg Config) http.Handler {
 			log.Fatalln("Cannot write zone file: ", zoneFile)
 		}
 		updater.writeZoneFile(cfg, zoneFile)
+		log.Printf("TXT Record %#v removed.", req.Form.Get("key"))
 	})
 }
 
@@ -180,11 +181,14 @@ func addTxtRecord(cfg Config) http.Handler {
 			log.Fatalln("Cannot write zone file: ", zoneFile)
 		}
 		updater.writeZoneFile(cfg, zoneFile)
+		log.Printf("TXT Record %#v added.", req.Form.Get("key"))
 	})
 }
 
 func dispatchRequest(cfg Config, add, remove http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		log.Println("Receive request.")
+		log.Println(req.Method)
 		switch req.Method {
 		case http.MethodPost:
 			add.ServeHTTP(w, req)
