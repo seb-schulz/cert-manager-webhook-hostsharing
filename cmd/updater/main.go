@@ -21,7 +21,7 @@ type ConfigTmpl struct {
 
 type Config struct {
 	ZoneFile string     `yaml:"zone-file"`
-	ApiKeys  []string   `yaml:"api-keys"`
+	ApiKey   string     `yaml:"api-key"`
 	Template ConfigTmpl `yaml:"template"`
 }
 
@@ -163,6 +163,10 @@ func (updater bindUpdater) Add(key string) error {
 	}
 	updater.writeZoneFile(zoneFile)
 	return nil
+}
+
+func (updater bindUpdater) ApiKey() string {
+	return updater.config.ApiKey
 }
 
 func main() {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,6 +9,8 @@ import (
 	"os"
 
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
@@ -31,13 +34,9 @@ func main() {
 // To do so, it must implement the `github.com/cert-manager/cert-manager/pkg/acme/webhook.Solver`
 // interface.
 type hostsharingDNSSolver struct {
-	// If a Kubernetes 'clientset' is needed, you must:
-	// 1. uncomment the additional `client` field in this structure below
-	// 2. uncomment the "k8s.io/client-go/kubernetes" import at the top of the file
-	// 3. uncomment the relevant code in the Initialize method below
 	// 4. ensure your webhook's service account has the required RBAC role
 	//    assigned to it for interacting with the Kubernetes APIs you need.
-	//client kubernetes.Clientset
+	client kubernetes.Clientset
 }
 
 // customConfig is a structure that is used to decode into when
@@ -60,8 +59,9 @@ type customConfig struct {
 	// These fields will be set by users in the
 	// `issuer.spec.acme.dns01.providers.webhook.config` field.
 
-	BaseUrl string `json:"baseUrl"`
-	//APIKeySecretRef v1alpha1.SecretKeySelector `json:"apiKeySecretRef"`
+	BaseUrl   string `json:"baseUrl"`
+	SecretRef string `json:"secretName"`
+	ApiKey    string `json:"api-key"`
 }
 
 // Name is used as the name for this DNS solver when referencing it on the ACME
@@ -85,8 +85,13 @@ func (c *hostsharingDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
+	if err := c.loadApiKey(cfg, ch); err != nil {
+		log.Println("error loading api key: ", err)
+	}
+
 	url := fmt.Sprintf("%s?key=%s", cfg.BaseUrl, ch.Key)
 	req, err := http.NewRequest(http.MethodPost, url, nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", cfg.ApiKey))
 	if err != nil {
 		log.Println("Failed to prepare request: ", err)
 	}
@@ -115,7 +120,12 @@ func (c *hostsharingDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return err
 	}
 
+	if err := c.loadApiKey(cfg, ch); err != nil {
+		log.Println("error loading api key: ", err)
+	}
+
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s?key=%s", cfg.BaseUrl, ch.Key), nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", cfg.ApiKey))
 	if err != nil {
 		fmt.Println("Failed to prepare request: ", err)
 	}
@@ -142,18 +152,43 @@ func (c *hostsharingDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 // The stopCh can be used to handle early termination of the webhook, in cases
 // where a SIGTERM or similar signal is sent to the webhook process.
 func (c *hostsharingDNSSolver) Initialize(kubeClientConfig *rest.Config, stopCh <-chan struct{}) error {
-	///// UNCOMMENT THE BELOW CODE TO MAKE A KUBERNETES CLIENTSET AVAILABLE TO
-	///// YOUR CUSTOM DNS PROVIDER
+	cl, err := kubernetes.NewForConfig(kubeClientConfig)
+	if err != nil {
+		return err
+	}
 
-	//cl, err := kubernetes.NewForConfig(kubeClientConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//c.client = cl
-
-	///// END OF CODE TO MAKE KUBERNETES CLIENTSET AVAILABLE
+	c.client = *cl
 	return nil
+}
+
+func (c *hostsharingDNSSolver) loadApiKey(cfg customConfig, ch *v1alpha1.ChallengeRequest) error {
+	if cfg.ApiKey != "" {
+		return nil
+	}
+
+	secretName := cfg.SecretRef
+	sec, err := c.client.CoreV1().Secrets(ch.ResourceNamespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+
+	if err != nil {
+		return fmt.Errorf("unable to get secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
+	}
+
+	apiKey, err := stringFromSecretData(&sec.Data, "api-key")
+
+	if err != nil {
+		return fmt.Errorf("unable to get api-key from secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
+	}
+
+	cfg.ApiKey = apiKey
+	return nil
+}
+
+func stringFromSecretData(secretData *map[string][]byte, key string) (string, error) {
+	data, ok := (*secretData)[key]
+	if !ok {
+		return "", fmt.Errorf("key %q not found in secret data", key)
+	}
+	return string(data), nil
 }
 
 func loadConfig(cfgJSON *extapi.JSON) (customConfig, error) {

@@ -17,8 +17,14 @@ export TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
 export TEST_ASSET_KUBE_APISERVER=$(CURDIR)/_test/kubebuilder/kube-apiserver
 export TEST_ASSET_KUBECTL=$(CURDIR)/_test/kubebuilder/kubectl
 
-test: _test/kubebuilder
+test: test-webhook test-all
+
+test-webhook: _test/kubebuilder
 	$(GO) test -v ./cmd/webhook/
+
+test-all:
+	$(GO) test -v ./cmd/updater/
+	$(GO) test -v ./hostsharing/...
 
 _test/kubebuilder:
 	curl -fsSL https://go.kubebuilder.io/test-tools/$(KUBE_VERSION)/$(OS)/$(ARCH) -o kubebuilder-tools.tar.gz

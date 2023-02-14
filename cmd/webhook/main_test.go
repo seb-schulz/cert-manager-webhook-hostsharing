@@ -23,6 +23,7 @@ type void struct{}
 type dnsServer struct {
 	server     *dns_mock.Server
 	txtRecords map[string]void
+	apiKey     string
 	sync.RWMutex
 }
 
@@ -38,6 +39,10 @@ func (e *dnsServer) Remove(key string) error {
 	delete(e.txtRecords, key)
 	e.Unlock()
 	return nil
+}
+
+func (e *dnsServer) ApiKey() string {
+	return e.apiKey
 }
 
 func (e *dnsServer) handleDNSRequest(w dns_mock.ResponseWriter, req *dns_mock.Msg) {
@@ -99,7 +104,7 @@ func (e *dnsServer) addDNSAnswer(q dns_mock.Question, msg *dns_mock.Msg, req *dn
 	}
 }
 
-func newDnsServer(port string) *dnsServer {
+func newDnsServer(port, apiKey string) *dnsServer {
 	e := &dnsServer{txtRecords: map[string]void{}}
 	e.server = &dns_mock.Server{
 		Addr:    ":" + port,
@@ -118,8 +123,9 @@ func newDnsServer(port string) *dnsServer {
 }
 
 func TestRunsSuite(t *testing.T) {
+	apiKey := "12345"
 	dnsPort, _ := rand.Int(rand.Reader, big.NewInt(50000))
-	dnsSvr := newDnsServer(dnsPort.String())
+	dnsSvr := newDnsServer(dnsPort.String(), apiKey)
 	svr := httptest.NewServer(hostsharing.UpdateHandler(dnsSvr))
 	defer svr.Close()
 	defer dnsSvr.server.Shutdown()
@@ -129,7 +135,7 @@ func TestRunsSuite(t *testing.T) {
 		dns.SetAllowAmbientCredentials(false),
 		dns.SetUseAuthoritative(false),
 		dns.SetDNSServer(fmt.Sprintf("127.0.0.1:%v", dnsPort)),
-		dns.SetConfig(customConfig{svr.URL}),
+		dns.SetConfig(customConfig{svr.URL, "", apiKey}),
 		// dns.SetBinariesPath("_test/kubebuilder/bin"),
 	)
 	// solver := hostsharing.New("59351")
