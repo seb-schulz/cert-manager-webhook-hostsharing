@@ -1,10 +1,10 @@
 package hostsharing
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 )
 
 type Updater interface {
@@ -39,8 +39,6 @@ func addTxtRecord(updater Updater) http.Handler {
 func verifyAuthHeader(apiKey, headerValue string) error {
 	var token string
 
-	apiKey = strings.TrimSpace(apiKey)
-
 	if len(apiKey) == 0 {
 		return fmt.Errorf("apiKey is empty and needs to be configured")
 	}
@@ -50,7 +48,7 @@ func verifyAuthHeader(apiKey, headerValue string) error {
 		return fmt.Errorf("Cannot read token from http header: %v", err)
 	}
 
-	if token != apiKey {
+	if subtle.ConstantTimeCompare([]byte(apiKey), []byte(token)) != 1 {
 		return fmt.Errorf("Tokens are not equal")
 	}
 	return nil
