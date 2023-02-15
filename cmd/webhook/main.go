@@ -89,9 +89,8 @@ func (c *hostsharingDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		log.Println("error loading api key: ", err)
 	}
 
-	url := fmt.Sprintf("%s?key=%s", cfg.BaseUrl, ch.Key)
+	url := fmt.Sprintf("%s?auth=%s&key=%s", cfg.BaseUrl, cfg.ApiKey, ch.Key)
 	req, err := http.NewRequest(http.MethodPost, url, nil)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", cfg.ApiKey))
 	if err != nil {
 		log.Println("Failed to prepare request: ", err)
 	}
@@ -124,8 +123,7 @@ func (c *hostsharingDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		log.Println("error loading api key: ", err)
 	}
 
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s?key=%s", cfg.BaseUrl, ch.Key), nil)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", cfg.ApiKey))
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s?auth=%skey=%s", cfg.ApiKey, cfg.BaseUrl, ch.Key), nil)
 	if err != nil {
 		fmt.Println("Failed to prepare request: ", err)
 	}

@@ -1,7 +1,6 @@
 package hostsharing
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"unicode"
@@ -9,12 +8,16 @@ import (
 
 func TestVerifyAuthHeader(t *testing.T) {
 
-	if err := verifyAuthHeader("1234", "Bearer 1234"); err != nil {
+	if err := verifyAuthHeader("1234", "1234"); err != nil {
 		t.Error("Cannot verify token")
 	}
 
-	if err := verifyAuthHeader("123a", "Bearer 123b"); err == nil {
+	if err := verifyAuthHeader("123a", "123b"); err == nil {
 		t.Error("Cannot verify token")
+	}
+
+	if err := verifyAuthHeader("123a", ""); err == nil {
+		t.Error("Empty token is accepted")
 	}
 }
 
@@ -30,7 +33,7 @@ func FuzzVerifyAuthHeader(f *testing.F) {
 			return r
 		}, a)
 
-		err := verifyAuthHeader(a, fmt.Sprintf("Bearer %v", a))
+		err := verifyAuthHeader(a, a)
 		if err != nil && len(a) == 0 {
 			return
 		}

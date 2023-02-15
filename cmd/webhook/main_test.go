@@ -136,14 +136,6 @@ func TestRunsSuite(t *testing.T) {
 		dns.SetUseAuthoritative(false),
 		dns.SetDNSServer(fmt.Sprintf("127.0.0.1:%v", dnsPort)),
 		dns.SetConfig(customConfig{svr.URL, "", apiKey}),
-		// dns.SetBinariesPath("_test/kubebuilder/bin"),
 	)
-	// solver := hostsharing.New("59351")
-	// fixture := dns.NewFixture(solver,
-	// 	dns.SetResolvedZone("example.com."),
-	// 	dns.SetManifestPath("../../testdata/hostsharing"),
-	// 	dns.SetDNSServer("127.0.0.1:59351"),
-	// )
-	//need to uncomment and  RunConformance delete runBasic and runExtended once https://github.com/cert-manager/cert-manager/pull/4835 is merged
 	fixture.RunConformance(t)
 }

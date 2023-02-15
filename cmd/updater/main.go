@@ -64,10 +64,6 @@ func loadConfig() Config {
 		panic(err)
 	}
 
-	// if cfg.Template.Head == "" {
-	// 	cfg.Template.Head = DefaultTemplateHead
-	// }
-
 	if cfg.ZoneFile == "" {
 		panic("No zone file defined")
 	}
