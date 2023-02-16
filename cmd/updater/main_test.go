@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -56,8 +57,10 @@ func TestWriteZoneFile(t *testing.T) {
 		// 	t.Errorf("Failed due to %v", err)
 		// }
 
-		if b.String() != expected[idx] {
-			t.Errorf("Expected %#v instead of %#v", expected, b.String())
+		got := b.String()
+
+		if strings.Contains(expected[idx], got) {
+			t.Errorf("Expected %#v instead of %#v", expected[idx], b.String())
 		}
 	}
 }

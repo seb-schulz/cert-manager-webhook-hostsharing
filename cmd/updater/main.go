@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/seb-schulz/cert-manager-webhook-hostsharing/hostsharing"
 	"gopkg.in/yaml.v3"
@@ -105,6 +106,11 @@ func (updater bindUpdater) writeZoneFile(w io.Writer) {
 		if err != nil {
 			panic(err)
 		}
+	}
+
+	_, err = io.WriteString(w, fmt.Sprintf("; %v\n", time.Now().Format(time.RFC1123)))
+	if err != nil {
+		panic(err)
 	}
 }
 
