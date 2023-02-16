@@ -3,11 +3,13 @@ OS ?= $(shell $(GO) env GOOS)
 ARCH ?= $(shell $(GO) env GOARCH)
 
 DOCKER ?= $(shell which docker)
+SCP_BIN ?=$(shell which scp)
+SSH_BIN ?=$(shell which ssh)
+SSH_OPTS ?=
 
+IMAGE_NAME ?= cert-manager-webhook-hostsharing
+IMAGE_TAG ?= latest
 -include Makefile.variables
-
-IMAGE_NAME := "cert-manager-webhook-hostsharing"
-IMAGE_TAG := "latest"
 
 OUT := $(shell pwd)/_out
 KUBE_VERSION=1.25.0
@@ -41,6 +43,14 @@ clean-kubebuilder:
 
 build:
 	$(DOCKER) build -t "$(IMAGE_NAME):$(IMAGE_TAG)" .
+	CGO_ENABLED=0 $(GO) build -ldflags '-w -extldflags "-static"' ./cmd/updater/
+
+push:
+	$(DOCKER) push "$(IMAGE_NAME):$(IMAGE_TAG)" ${REMOTE_REGISTRY}
+
+deploy-hostsharing:
+	$(SSH_BIN) $(SSH_OPTS) $(SSH_HOST) killall updater
+	$(SCP_BIN) $(SSH_OPTS) updater $(SCP_DEST)
 
 .PHONY: rendered-manifest.yaml
 rendered-manifest.yaml:
