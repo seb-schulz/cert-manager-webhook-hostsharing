@@ -44,16 +44,19 @@ func UpdateHandler(u Updater) http.Handler {
 		err := req.ParseForm()
 		if err != nil {
 			log.Fatalf("Cannot parse request: %v\n", err)
+			return
 		}
 
 		acmeKey := req.Form.Get("key")
 		if len(acmeKey) == 0 {
 			http.Error(w, "Empty key is invalid", http.StatusBadRequest)
+			return
 		}
 
 		salt, err := strconv.Atoi(req.Form.Get("salt"))
 		if err != nil {
 			http.Error(w, "Invalid salt", http.StatusBadRequest)
+			return
 		}
 
 		auth, err := hex.DecodeString(req.Form.Get("auth"))
