@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  cert-manager-webhook-hostsharing:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2023-02-16T23:12:40.400778626+01:00"
+    description: A Helm chart for Kubernetes
+    digest: 06a3d285be7faa8ce7c45bd10a644237be2e323f3f668878eef85f289ac7f751
+    name: cert-manager-webhook-hostsharing
+    urls:
+    - https://seb-schulz.github.io/cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-02-16T23:12:40.400478922+01:00"
