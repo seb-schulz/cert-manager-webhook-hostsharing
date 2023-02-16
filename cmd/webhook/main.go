@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
 	"github.com/cert-manager/cert-manager/pkg/acme/webhook/cmd"
+	"github.com/seb-schulz/cert-manager-webhook-hostsharing/hostsharing"
 )
 
 var GroupName = os.Getenv("GROUP_NAME")
@@ -89,19 +89,8 @@ func (c *hostsharingDNSSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		log.Println("error loading api key: ", err)
 	}
 
-	url := fmt.Sprintf("%s?auth=%s&key=%s", cfg.BaseUrl, cfg.ApiKey, ch.Key)
-	req, err := http.NewRequest(http.MethodPost, url, nil)
-	if err != nil {
-		log.Println("Failed to prepare request: ", err)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Println("Failed to create record: ", err)
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		log.Println("TXT Record created.")
+	if err := hostsharing.AddTxtRecord(cfg.BaseUrl, cfg.ApiKey, ch.Key); err != nil {
+		fmt.Println("Failed request change: ", err)
 	}
 
 	return nil
@@ -123,18 +112,8 @@ func (c *hostsharingDNSSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		log.Println("error loading api key: ", err)
 	}
 
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s?auth=%skey=%s", cfg.ApiKey, cfg.BaseUrl, ch.Key), nil)
-	if err != nil {
-		fmt.Println("Failed to prepare request: ", err)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		fmt.Println("Failed to create record: ", err)
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		fmt.Println("TXT Record deleted.")
+	if err := hostsharing.RemoveTxtRecord(cfg.BaseUrl, cfg.ApiKey, ch.Key); err != nil {
+		fmt.Println("Failed request change: ", err)
 	}
 
 	return nil

@@ -1,44 +1,45 @@
 package hostsharing
 
 import (
-	"strings"
+	"net/http/httptest"
 	"testing"
-	"unicode"
 )
 
-func TestVerifyAuthHeader(t *testing.T) {
-
-	if err := verifyAuthHeader("1234", "1234"); err != nil {
-		t.Error("Cannot verify token")
-	}
-
-	if err := verifyAuthHeader("123a", "123b"); err == nil {
-		t.Error("Cannot verify token")
-	}
-
-	if err := verifyAuthHeader("123a", ""); err == nil {
-		t.Error("Empty token is accepted")
-	}
+type mock struct {
+	key *string
 }
 
-func FuzzVerifyAuthHeader(f *testing.F) {
-	f.Add("123")
-	f.Add("abc")
+func (u mock) Add(key string) error {
+	u.key = &key
+	return nil
+}
+func (u mock) Remove(key string) error {
+	u.key = &key
+	return nil
+}
+func (u mock) ApiKey() string { return "abc" }
 
-	f.Fuzz(func(t *testing.T, a string) {
-		a = strings.Map(func(r rune) rune {
-			if unicode.IsSpace(r) {
-				return -1
-			}
-			return r
-		}, a)
+func TestAddTxtRecord(t *testing.T) {
+	mock := mock{}
+	svr := httptest.NewServer(UpdateHandler(mock))
 
-		err := verifyAuthHeader(a, a)
-		if err != nil && len(a) == 0 {
-			return
-		}
-		if err != nil {
-			t.Fatalf("Cannot verify %#v due to %v", a, err)
-		}
-	})
+	if err := AddTxtRecord(svr.URL, "abc", ""); err == nil {
+		t.Errorf("Accepted empty acme key")
+	}
+
+	err := AddTxtRecord(svr.URL, "invalid", "1234")
+	if err == nil {
+		t.Errorf("Accepted invalid api key")
+	}
+
+	err = AddTxtRecord(svr.URL, "abc", "1234")
+	if err != nil {
+		t.Errorf("Faild to add txt record: %v", err)
+	}
+
+	if mock.key != nil && *mock.key != "1234" {
+		t.Errorf("Key was not set correctly")
+	}
+
+	defer svr.Close()
 }

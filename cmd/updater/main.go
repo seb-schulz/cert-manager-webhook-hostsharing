@@ -181,7 +181,7 @@ func main() {
 
 	switch *svrType {
 	case "http":
-		http.Handle("/acme-txt", handler)
+		http.Handle("/", handler)
 		log.Fatal(http.ListenAndServe(":9090", nil))
 	case "fcgi":
 		log.Fatal(fcgi.Serve(nil, handler))

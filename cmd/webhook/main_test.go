@@ -105,7 +105,7 @@ func (e *dnsServer) addDNSAnswer(q dns_mock.Question, msg *dns_mock.Msg, req *dn
 }
 
 func newDnsServer(port, apiKey string) *dnsServer {
-	e := &dnsServer{txtRecords: map[string]void{}}
+	e := &dnsServer{txtRecords: map[string]void{}, apiKey: apiKey}
 	e.server = &dns_mock.Server{
 		Addr:    ":" + port,
 		Net:     "udp",
