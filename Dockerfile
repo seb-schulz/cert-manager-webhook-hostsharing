@@ -14,6 +14,7 @@ FROM build_deps AS build
 COPY . .
 
 RUN CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' ./cmd/webhook/
+RUN CGO_ENABLED=0 go build -o _out/updater -ldflags '-w -extldflags "-static"' ./cmd/updater/
 
 FROM docker.io/alpine:3.9
 

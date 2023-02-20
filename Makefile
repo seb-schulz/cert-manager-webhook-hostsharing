@@ -42,15 +42,14 @@ clean-kubebuilder:
 	rm -Rf _test/kubebuilder
 
 build:
-	$(DOCKER) build -t "$(IMAGE_NAME):$(IMAGE_TAG)" .
-	CGO_ENABLED=0 $(GO) build -ldflags '-w -extldflags "-static"' ./cmd/updater/
+	$(DOCKER) build -v $(OUT):/workspace/_out:z -t "$(IMAGE_NAME):$(IMAGE_TAG)" .
 
 push:
 	$(DOCKER) push "$(IMAGE_NAME):$(IMAGE_TAG)" ${REMOTE_REGISTRY}
 
 deploy-hostsharing:
 	$(SSH_BIN) $(SSH_OPTS) $(SSH_HOST) killall updater || true
-	$(SCP_BIN) $(SSH_OPTS) updater $(SCP_DEST)
+	$(SCP_BIN) $(SSH_OPTS) $(OUT)/updater $(SCP_DEST)
 
 .PHONY: rendered-manifest.yaml
 rendered-manifest.yaml:
