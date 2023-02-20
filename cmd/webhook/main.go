@@ -61,7 +61,7 @@ type customConfig struct {
 
 	BaseUrl   string `json:"baseUrl"`
 	SecretRef string `json:"secretName"`
-	ApiKey    string `json:"api-key"`
+	ApiKey    string `json:"apiKey"`
 }
 
 // Name is used as the name for this DNS solver when referencing it on the ACME
