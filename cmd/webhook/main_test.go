@@ -135,7 +135,7 @@ func TestRunsSuite(t *testing.T) {
 		dns.SetAllowAmbientCredentials(false),
 		dns.SetUseAuthoritative(false),
 		dns.SetDNSServer(fmt.Sprintf("127.0.0.1:%v", dnsPort)),
-		dns.SetConfig(customConfig{svr.URL, "", apiKey}),
+		dns.SetConfig(customConfig{svr.URL, apiKey}),
 	)
 	fixture.RunConformance(t)
 }
