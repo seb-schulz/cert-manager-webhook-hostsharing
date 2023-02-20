@@ -49,7 +49,7 @@ push:
 	$(DOCKER) push "$(IMAGE_NAME):$(IMAGE_TAG)" ${REMOTE_REGISTRY}
 
 deploy-hostsharing:
-	$(SSH_BIN) $(SSH_OPTS) $(SSH_HOST) killall updater
+	$(SSH_BIN) $(SSH_OPTS) $(SSH_HOST) killall updater || true
 	$(SCP_BIN) $(SSH_OPTS) updater $(SCP_DEST)
 
 .PHONY: rendered-manifest.yaml
