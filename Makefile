@@ -8,7 +8,7 @@ SSH_BIN ?=$(shell which ssh)
 SSH_OPTS ?=
 
 IMAGE_NAME ?= cert-manager-webhook-hostsharing
-IMAGE_TAG ?= latest
+IMAGE_TAG ?= 2 #latest
 -include Makefile.variables
 
 OUT := $(shell pwd)/_out
