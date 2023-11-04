@@ -18,6 +18,7 @@ $(shell mkdir -p "$(OUT)")
 export TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
 export TEST_ASSET_KUBE_APISERVER=$(CURDIR)/_test/kubebuilder/kube-apiserver
 export TEST_ASSET_KUBECTL=$(CURDIR)/_test/kubebuilder/kubectl
+export TEST_ZONE_NAME=example.com.
 
 test: test-webhook test-all
 
@@ -36,10 +37,13 @@ _test/kubebuilder:
 	rm kubebuilder-tools.tar.gz
 	rm -R kubebuilder
 
-clean: clean-kubebuilder
+clean: clean-kubebuilder clean-out
 
 clean-kubebuilder:
 	rm -Rf _test/kubebuilder
+
+clean-out:
+	rm -Rf _out && mkdir -p _out
 
 build:
 	$(DOCKER) build -v $(OUT):/workspace/_out:z -t "$(IMAGE_NAME):$(IMAGE_TAG)" .
