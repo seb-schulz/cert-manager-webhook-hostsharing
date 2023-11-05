@@ -2,17 +2,17 @@ GO ?= $(shell which go)
 OS ?= $(shell $(GO) env GOOS)
 ARCH ?= $(shell $(GO) env GOARCH)
 
-DOCKER ?= $(shell which docker)
+BUILDAH ?= $(shell which buildah)
 SCP_BIN ?=$(shell which scp)
 SSH_BIN ?=$(shell which ssh)
 SSH_OPTS ?=
 
-IMAGE_NAME ?= cert-manager-webhook-hostsharing
+IMAGE_NAME ?= ghcr.io/seb-schulz/cert-manager-webhook-hostsharing
 IMAGE_TAG ?= 2 #latest
 -include Makefile.variables
 
 OUT := $(shell pwd)/_out
-KUBE_VERSION=1.25.0
+KUBE_VERSION?=1.25.0
 
 $(shell mkdir -p "$(OUT)")
 export TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
@@ -46,10 +46,10 @@ clean-out:
 	rm -Rf _out && mkdir -p _out
 
 build:
-	$(DOCKER) build -v $(OUT):/workspace/_out:z -t "$(IMAGE_NAME):$(IMAGE_TAG)" .
+	$(BUILDAH) bud -v $(OUT):/workspace/_out:z --squash -t $(IMAGE_NAME):$(IMAGE_TAG)
 
 push:
-	$(DOCKER) push "$(IMAGE_NAME):$(IMAGE_TAG)" ${REMOTE_REGISTRY}
+	$(DOCKER) push $(IMAGE_NAME):$(IMAGE_TAG)
 
 deploy-hostsharing:
 	$(SSH_BIN) $(SSH_OPTS) $(SSH_HOST) killall updater || true

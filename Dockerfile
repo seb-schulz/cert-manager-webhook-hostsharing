@@ -1,6 +1,7 @@
-FROM docker.io/golang:1.19-alpine AS build_deps
+ARG GO_TAG=1.19-alpine
+ARG ALPINE_TAG=3.9
 
-RUN apk add --no-cache git
+FROM docker.io/golang:${GO_TAG} AS build_deps
 
 WORKDIR /workspace
 
@@ -16,7 +17,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' ./cmd/webhook/
 RUN CGO_ENABLED=0 go build -o _out/updater -ldflags '-w -extldflags "-static"' ./cmd/updater/
 
-FROM docker.io/alpine:3.9
+FROM docker.io/alpine:${ALPINE_TAG}
 
 RUN apk add --no-cache ca-certificates
 
