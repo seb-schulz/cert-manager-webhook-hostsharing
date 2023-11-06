@@ -12,7 +12,7 @@ IMAGE_TAG ?= 2 #latest
 -include Makefile.variables
 
 OUT := $(shell pwd)/_out
-KUBE_VERSION?=1.25.0
+KUBE_VERSION?=1.28.3
 
 $(shell mkdir -p "$(OUT)")
 export TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
