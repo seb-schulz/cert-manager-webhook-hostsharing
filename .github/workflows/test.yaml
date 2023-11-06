@@ -18,6 +18,6 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Display Go version
         run: go version
-      - run: make test -j2
+      - run: make test
         env:
           KUBE_VERSION: ${{ matrix.kube-version }}

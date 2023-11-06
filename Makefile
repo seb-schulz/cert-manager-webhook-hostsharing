@@ -7,18 +7,30 @@ SCP_BIN ?=$(shell which scp)
 SSH_BIN ?=$(shell which ssh)
 SSH_OPTS ?=
 
+VERSION ?= $(shell git describe --tags --abbrev --always)
+
 IMAGE_NAME ?= ghcr.io/seb-schulz/cert-manager-webhook-hostsharing
-IMAGE_TAG ?= 2 #latest
+IMAGE_TAG ?= $(patsubst v%,%,$(VERSION))
+
+WEBPAGE_URL=https://seb-schulz.github.io/cert-manager-webhook-hostsharing/
+GIT_REMOTE_URL ?= $(shell git remote get-url origin)
+
 -include Makefile.variables
 
 OUT := $(shell pwd)/_out
 KUBE_VERSION?=1.28.3
 
 $(shell mkdir -p "$(OUT)")
-export TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
-export TEST_ASSET_KUBE_APISERVER=$(CURDIR)/_test/kubebuilder/kube-apiserver
-export TEST_ASSET_KUBECTL=$(CURDIR)/_test/kubebuilder/kubectl
-export TEST_ZONE_NAME=example.com.
+TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
+TEST_ASSET_KUBE_APISERVER=$(CURDIR)/_test/kubebuilder/kube-apiserver
+TEST_ASSET_KUBECTL=$(CURDIR)/_test/kubebuilder/kubectl
+TEST_ZONE_NAME=example.com.
+
+export
+# export IMAGE_TAG
+
+debug:
+	echo $(VERSION) $(IMAGE_TAG)
 
 test: test-webhook test-all
 
@@ -49,7 +61,10 @@ build:
 	$(BUILDAH) bud -v $(OUT):/workspace/_out:z --squash -t $(IMAGE_NAME):$(IMAGE_TAG)
 
 push:
-	$(DOCKER) push $(IMAGE_NAME):$(IMAGE_TAG)
+	$(BUILDAH) push $(IMAGE_NAME):$(IMAGE_TAG)
+
+release:
+	./scripts/$@.sh
 
 deploy-hostsharing:
 	$(SSH_BIN) $(SSH_OPTS) $(SSH_HOST) killall updater || true
