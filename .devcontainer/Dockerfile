@@ -1,4 +1,6 @@
-FROM docker.io/golang:1.19-alpine
+ARG GO_TAG=1.21-alpine
+
+FROM docker.io/golang:${GO_TAG}
 
 RUN apk add --no-cache ca-certificates git make curl build-base bash \
     && go install github.com/go-delve/delve/cmd/dlv@latest \

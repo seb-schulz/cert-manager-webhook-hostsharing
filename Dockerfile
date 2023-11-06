@@ -1,5 +1,5 @@
-ARG GO_TAG=1.19-alpine
-ARG ALPINE_TAG=3.9
+ARG GO_TAG=1.21-alpine
+ARG ALPINE_TAG=3.18
 
 FROM docker.io/golang:${GO_TAG} AS build_deps
 
