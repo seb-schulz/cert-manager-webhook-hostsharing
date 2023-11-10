@@ -46,3 +46,7 @@ Create chart name and version as used by the chart label.
 {{- define "cert-manager-webhook-hostsharing.servingCertificate" -}}
 {{ printf "%s-webhook-tls" (include "cert-manager-webhook-hostsharing.fullname" .) }}
 {{- end -}}
+
+{{- define "cert-manager-webhook-hostsharing.image" -}}
+{{ .Values.image.repository }}:{{ default .Chart.Version .Values.image.tag }}
+{{- end -}}

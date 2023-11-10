@@ -23,7 +23,7 @@ spec:
       serviceAccountName: {{ include "cert-manager-webhook-hostsharing.fullname" . }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "cert-manager-webhook-hostsharing.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - --tls-cert-file=/tls/tls.crt
