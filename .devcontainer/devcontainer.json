@@ -13,7 +13,7 @@
 		// Configure properties specific to VS Code.
 		"vscode": {
 			"settings": {
-				"go.formatTool": "gofmt",
+				"go.formatTool": "default",
 				"go.testOnSave": true,
 				"go.useLanguageServer": true,
 				"go.testEnvFile": "${workspaceFolder}/.env-test",

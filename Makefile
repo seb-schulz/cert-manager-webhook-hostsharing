@@ -3,6 +3,7 @@ OS ?= $(shell $(GO) env GOOS)
 ARCH ?= $(shell $(GO) env GOARCH)
 
 BUILDAH ?= $(shell which buildah)
+HELM ?= $(shell which helm)
 SCP_BIN ?=$(shell which scp)
 SSH_BIN ?=$(shell which ssh)
 SSH_OPTS ?=
@@ -27,10 +28,6 @@ TEST_ASSET_KUBECTL=$(CURDIR)/_test/kubebuilder/kubectl
 TEST_ZONE_NAME=example.com.
 
 export
-# export IMAGE_TAG
-
-debug:
-	echo $(VERSION) $(IMAGE_TAG)
 
 test: test-webhook test-all
 
@@ -66,13 +63,16 @@ push:
 release:
 	./scripts/$@.sh
 
+lint:
+	$(HELM) lint deploy/cert-manager-webhook-hostsharing/
+
 deploy-hostsharing:
 	$(SSH_BIN) $(SSH_OPTS) $(SSH_HOST) killall updater || true
 	$(SCP_BIN) $(SSH_OPTS) $(OUT)/updater $(SCP_DEST)
 
 .PHONY: rendered-manifest.yaml
 rendered-manifest.yaml:
-	helm template \
+	$(HELM) template \
             --set image.repository=$(IMAGE_NAME) \
             --set image.tag=$(IMAGE_TAG) \
             cert-manager-webhook-hostsharing deploy/cert-manager-webhook-hostsharing > "$(OUT)/rendered-manifest.yaml"
