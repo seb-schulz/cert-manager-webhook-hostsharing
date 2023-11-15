@@ -8,7 +8,7 @@ replace github.com/cert-manager/cert-manager => github.com/cert-manager/cert-man
 
 require (
 	github.com/cert-manager/cert-manager v1.13.2
-	github.com/miekg/dns v1.1.56
+	github.com/miekg/dns v1.1.57
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apiextensions-apiserver v0.28.3
 	k8s.io/client-go v0.28.3
