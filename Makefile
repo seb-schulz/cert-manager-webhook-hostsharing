@@ -1,6 +1,4 @@
 GO ?= $(shell which go)
-OS ?= $(shell $(GO) env GOOS)
-ARCH ?= $(shell $(GO) env GOARCH)
 
 BUILDAH ?= $(shell which buildah)
 HELM ?= $(shell which helm)
@@ -39,7 +37,7 @@ test-all:
 	$(GO) test -v ./hostsharing/...
 
 _test/kubebuilder:
-	curl -fsSL https://go.kubebuilder.io/test-tools/$(KUBE_VERSION)/$(OS)/$(ARCH) -o kubebuilder-tools.tar.gz
+	curl -fsSL https://go.kubebuilder.io/test-tools/$(KUBE_VERSION)/$(shell $(GO) env GOOS)/$(shell $(GO) env GOARCH) -o kubebuilder-tools.tar.gz
 	mkdir -p _test/kubebuilder
 	tar -xvf kubebuilder-tools.tar.gz
 	mv kubebuilder/bin/* _test/kubebuilder/
