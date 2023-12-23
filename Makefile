@@ -1,4 +1,6 @@
 GO ?= $(shell which go)
+OS ?= $(shell $(GO) env GOOS)
+ARCH ?= $(shell $(GO) env GOARCH)
 
 BUILDAH ?= $(shell which buildah)
 HELM ?= $(shell which helm)
