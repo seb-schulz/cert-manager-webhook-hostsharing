@@ -19,13 +19,13 @@ func newBindUpdater(keys []string) bindUpdater {
 
 func TestParseZoneFile(t *testing.T) {
 	tests := map[string]map[string]void{
-		"Noop": map[string]void{},
+		"Noop": {},
 		`{DEFAULT_ZONEFILE}
 _acme-challenge.{DOM_HOSTNAME}. IN TXT "1234" ; acme-updater
-_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678" ; acme-updater`: map[string]void{"1234": void{}, "5678": void{}},
+_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678" ; acme-updater`: {"1234": {}, "5678": {}},
 		`{DEFAULT_ZONEFILE}
 _acme-challenge.{DOM_HOSTNAME}. IN TXT "1234" ; acme-updater
-_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678"`: map[string]void{"1234": void{}},
+_acme-challenge.{DOM_HOSTNAME}. IN TXT "5678"`: {"1234": void{}},
 	}
 
 	for input, expected := range tests {
@@ -48,7 +48,7 @@ func TestWriteZoneFile(t *testing.T) {
 		"{DEFAULT_ZONEFILE}\n_acme-challenge.{DOM_HOSTNAME}. IN TXT \"123\" ; acme-updater\n",
 	}
 
-	for idx, keys := range [][]string{[]string{}, []string{"123"}} {
+	for idx, keys := range [][]string{{}, {"123"}} {
 		b := new(bytes.Buffer)
 		obj := newBindUpdater(keys)
 		obj.config = cfg

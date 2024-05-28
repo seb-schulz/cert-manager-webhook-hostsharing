@@ -120,7 +120,12 @@ func (updater bindUpdater) readZoneFile() (bool, string) {
 	}
 
 	zone, err := os.Open(updater.config.ZoneFile)
-	defer zone.Close()
+	defer func() {
+		if err := zone.Close(); err != nil {
+			log.Printf("cannot close zone: %s", err)
+		}
+	}()
+
 	if err != nil {
 		log.Println("Error while opening zone file", err)
 		return false, ""

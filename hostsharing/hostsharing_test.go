@@ -9,18 +9,18 @@ type mock struct {
 	key *string
 }
 
-func (u mock) Add(key string) error {
+func (u *mock) Add(key string) error {
 	u.key = &key
 	return nil
 }
-func (u mock) Remove(key string) error {
+func (u *mock) Remove(key string) error {
 	u.key = &key
 	return nil
 }
-func (u mock) ApiKey() string { return "abc" }
+func (u *mock) ApiKey() string { return "abc" }
 
 func TestAddTxtRecord(t *testing.T) {
-	mock := mock{}
+	mock := &mock{}
 	svr := httptest.NewServer(UpdateHandler(mock))
 
 	if err := AddTxtRecord(svr.URL, "abc", ""); err == nil {

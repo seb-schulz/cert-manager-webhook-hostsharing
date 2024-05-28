@@ -18,13 +18,6 @@ type Updater interface {
 	ApiKey() string
 }
 
-func removeTxtRecord(updater Updater) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		updater.Remove(req.Form.Get("key"))
-		log.Printf("TXT Record %#v removed.", req.Form.Get("key"))
-	})
-}
-
 func generateAuthToken(apiKey string, acmeKey string, salt int) []byte {
 	mac := hmac.New(sha256.New, []byte(apiKey))
 	mac.Write([]byte(acmeKey))
@@ -37,7 +30,7 @@ func UpdateHandler(u Updater) http.Handler {
 		log.Println("Receive request.")
 
 		if req.Method != http.MethodPost {
-			http.NotFoundHandler()
+			http.NotFound(w, req)
 			return
 		}
 
@@ -71,7 +64,7 @@ func UpdateHandler(u Updater) http.Handler {
 		}
 
 		if !hmac.Equal(auth, generateAuthToken(u.ApiKey(), acmeKey, salt)) {
-			http.Error(w, fmt.Sprintf("Unauthorized access!"), http.StatusUnauthorized)
+			http.Error(w, "Unauthorized access!", http.StatusUnauthorized)
 			return
 		}
 
@@ -81,7 +74,7 @@ func UpdateHandler(u Updater) http.Handler {
 		case "remove":
 			u.Remove(acmeKey)
 		default:
-			http.Error(w, fmt.Sprintf("Invalid or missing action field"), http.StatusBadRequest)
+			http.Error(w, "Invalid or missing action field", http.StatusBadRequest)
 			return
 		}
 	})
@@ -105,7 +98,7 @@ func AddTxtRecord(baseUrl, apiKey, acmeKey string) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Cannot create TXT record")
+		return fmt.Errorf("cannot create TXT record because of status code: %d", resp.StatusCode)
 	}
 	return nil
 }
@@ -117,11 +110,11 @@ func RemoveTxtRecord(baseUrl, apiKey, acmeKey string) error {
 
 	resp, err := http.PostForm(baseUrl, data)
 	if err != nil {
-		return fmt.Errorf("Failed to remove record: %v", err)
+		return fmt.Errorf("failed to remove record: %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Cannot remove TXT record")
+		return fmt.Errorf("cannot remove TXT record because of status code: %d", resp.StatusCode)
 	}
 	return nil
 }

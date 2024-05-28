@@ -51,7 +51,7 @@ func (e *dnsServer) handleDNSRequest(w dns_mock.ResponseWriter, req *dns_mock.Ms
 	switch req.Opcode {
 	case dns_mock.OpcodeQuery:
 		for _, q := range msg.Question {
-			if err := e.addDNSAnswer(q, msg, req); err != nil {
+			if err := e.addDNSAnswer(q, msg); err != nil {
 				msg.SetRcode(req, dns_mock.RcodeServerFailure)
 				break
 			}
@@ -60,7 +60,7 @@ func (e *dnsServer) handleDNSRequest(w dns_mock.ResponseWriter, req *dns_mock.Ms
 	w.WriteMsg(msg)
 }
 
-func (e *dnsServer) addDNSAnswer(q dns_mock.Question, msg *dns_mock.Msg, req *dns_mock.Msg) error {
+func (e *dnsServer) addDNSAnswer(q dns_mock.Question, msg *dns_mock.Msg) error {
 	switch q.Qtype {
 	case dns_mock.TypeA:
 		rr, err := dns_mock.NewRR(fmt.Sprintf("%s 5 IN A 127.0.0.1", q.Name))
