@@ -1,4 +1,4 @@
-FROM docker.io/golang:1.21-alpine
+FROM docker.io/golang:1.22-alpine
 
 RUN apk add --no-cache ca-certificates git make curl build-base bash sudo shadow \
     && groupadd --gid 1000 vscode \
