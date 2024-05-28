@@ -11,7 +11,7 @@
     {
       "managers": ["gomod"],
       "pinDigests": true,
-      "postUpdateOptions": "gomodTidy",
+      "postUpdateOptions": ["gomodTidy", "gomodMassage"],
       "matchDepTypes": ["indirect"]
     },
     {
