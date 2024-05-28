@@ -5,7 +5,14 @@
   "packageRules": [
     {
       "managers": ["dockerfile"],
-      "groupName": "dockerfile-dependency"
+      "groupName": "dockerfile-dependency",
+      "pinDigests": true
+    },
+    {
+      "managers": ["gomod"],
+      "pinDigests": true,
+      "postUpdateOptions": "gomodTidy",
+      "matchDepTypes": ["indirect"]
     },
     {
       "matchPackageNames": ["github.com/cert-manager/cert-manager"],
