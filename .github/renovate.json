@@ -6,6 +6,10 @@
     {
       "managers": ["dockerfile"],
       "groupName": "dockerfile-dependency"
+    },
+    {
+      "matchPackageNames": ["github.com/cert-manager/cert-manager"],
+      "enabled": false
     }
   ]
 }
