@@ -26,7 +26,7 @@
       },
       "extensions": ["esbenp.prettier-vscode", "golang.go"]
     }
-  }
-  // "runArgs": ["--userns=keep-id"],
-  // "containerUser": "vscode"
+  },
+  "runArgs": ["--userns=keep-id"],
+  "containerUser": "vscode"
 }
