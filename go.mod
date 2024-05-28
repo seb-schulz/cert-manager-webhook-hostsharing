@@ -9,7 +9,7 @@ toolchain go1.22.3
 replace github.com/cert-manager/cert-manager => github.com/cert-manager/cert-manager v1.11.1-0.20230119150913-7ebb5f515e4f
 
 require (
-	github.com/cert-manager/cert-manager v1.13.3
+	github.com/cert-manager/cert-manager v1.14.5
 	github.com/miekg/dns v1.1.59
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apiextensions-apiserver v0.29.3
