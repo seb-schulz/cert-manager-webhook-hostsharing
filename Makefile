@@ -19,7 +19,7 @@ GIT_REMOTE_URL ?= $(shell git remote get-url origin)
 -include Makefile.variables
 
 OUT := $(shell pwd)/_out
-KUBE_VERSION?=1.28.3
+KUBE_VERSION?=1.30.0
 
 $(shell mkdir -p "$(OUT)")
 TEST_ASSET_ETCD=$(CURDIR)/_test/kubebuilder/etcd
@@ -46,11 +46,14 @@ _test/kubebuilder:
 	rm kubebuilder-tools.tar.gz
 	rm -R kubebuilder
 
+.PHONY: clean
 clean: clean-kubebuilder clean-out
 
+.PHONY: clean-kubebuilder
 clean-kubebuilder:
 	rm -Rf _test/kubebuilder
 
+.PHONY: clean-out
 clean-out:
 	rm -Rf _out && mkdir -p _out
 
