@@ -1,0 +1,32 @@
+name: Renovate
+on:
+  schedule:
+    - cron: "12 4 * * Sun"
+  # Allows manual/automated ad-hoc trigger
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Override default log level"
+        required: false
+        default: "info"
+        type: string
+jobs:
+  renovate:
+    if: github.repository == 'seb-schulz/cert-manager-webhook-hostsharing'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate Renovate JSON
+        run: jq type .github/renovate.json
+      - name: Run renovate
+        run: make check-updates
+        env:
+          DOCKER_BIN: /usr/bin/docker
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}

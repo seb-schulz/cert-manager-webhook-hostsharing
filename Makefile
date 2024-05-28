@@ -1,6 +1,7 @@
 GO ?= $(shell which go)
 
 BUILDAH ?= $(shell which buildah)
+DOCKER_BIN ?= $(shell which podman 2> /dev/null)
 HELM ?= $(shell which helm)
 SCP_BIN ?=$(shell which scp)
 SSH_BIN ?=$(shell which ssh)
@@ -11,6 +12,7 @@ VERSION ?= $(shell git describe --tags --abbrev --always)
 IMAGE_NAME ?= ghcr.io/seb-schulz/cert-manager-webhook-hostsharing
 IMAGE_TAG ?= $(patsubst v%,%,$(VERSION))
 
+RENOVATE_REPOSITORIES ?= seb-schulz/cert-manager-webhook-hostsharing
 WEBPAGE_URL=https://seb-schulz.github.io/cert-manager-webhook-hostsharing/
 GIT_REMOTE_URL ?= $(shell git remote get-url origin)
 
@@ -74,3 +76,7 @@ rendered-manifest.yaml:
             --set image.repository=$(IMAGE_NAME) \
             --set image.tag=$(IMAGE_TAG) \
             cert-manager-webhook-hostsharing deploy/cert-manager-webhook-hostsharing > "$(OUT)/rendered-manifest.yaml"
+
+.PHONY: check-updates
+check-updates:
+	./scripts/$@.sh
