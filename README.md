@@ -123,3 +123,11 @@ You can run the test suite with:
 ```bash
 $ make test
 ```
+
+## Releasing
+
+- Ensure clean git working directory
+- Bump version of `deploy/cert-manager-webhook-hostsharing/Chart.yaml`
+- Create tag with `git tag vX.Y.Z`
+- Push latest version with `git push origin vX.Y.Z`
+- Publish draft of latest release on <https://github.com/seb-schulz/price-pivot/releases/latest>
