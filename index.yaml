@@ -2,7 +2,16 @@ apiVersion: v1
 entries:
   cert-manager-webhook-hostsharing:
   - apiVersion: v1
-    created: "2024-05-29T13:54:11.378883925Z"
+    created: "2024-05-29T17:42:18.334516559Z"
+    description: A Helm chart for Kubernetes
+    digest: d1b25b165a96cda207c5728ccc97cf2011738cbe76bed40a48f7077de137af52
+    icon: https://www.hostsharing.net/apple-touch-icon.png
+    name: cert-manager-webhook-hostsharing
+    urls:
+    - https://seb-schulz.github.io/cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing-0.3.4.tgz
+    version: 0.3.4
+  - apiVersion: v1
+    created: "2024-05-29T17:42:18.334271672Z"
     description: A Helm chart for Kubernetes
     digest: abff1ba16b5cd1f7cc81b239caa1897994b888a359601112402504cad113ba0d
     icon: https://www.hostsharing.net/apple-touch-icon.png
@@ -11,7 +20,7 @@ entries:
     - https://seb-schulz.github.io/cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing-0.3.3.tgz
     version: 0.3.3
   - apiVersion: v1
-    created: "2024-05-29T13:54:11.378384838Z"
+    created: "2024-05-29T17:42:18.333803788Z"
     description: A Helm chart for Kubernetes
     digest: 07dad966f49150bcb92044e10864cd962fa2a4a360c67bbfe3a00d9694880d44
     name: cert-manager-webhook-hostsharing
@@ -20,7 +29,7 @@ entries:
     version: 0.2.0
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2024-05-29T13:54:11.377917672Z"
+    created: "2024-05-29T17:42:18.333358928Z"
     description: A Helm chart for Kubernetes
     digest: 658fe129d1cfe94ffa5d751d09887988dc349f92a62e40fc27633f4433bfd786
     name: cert-manager-webhook-hostsharing
@@ -29,11 +38,11 @@ entries:
     version: 0.1.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2024-05-29T13:54:11.377508826Z"
+    created: "2024-05-29T17:42:18.332698544Z"
     description: A Helm chart for Kubernetes
     digest: 06a3d285be7faa8ce7c45bd10a644237be2e323f3f668878eef85f289ac7f751
     name: cert-manager-webhook-hostsharing
     urls:
     - https://seb-schulz.github.io/cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing-0.1.0.tgz
     version: 0.1.0
-generated: "2024-05-29T13:54:11.376989352Z"
+generated: "2024-05-29T17:42:18.332248454Z"
