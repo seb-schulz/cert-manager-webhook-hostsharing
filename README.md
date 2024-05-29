@@ -8,10 +8,10 @@ This solver can be used when you want to use cert-manager with [Hostsharing e.G.
 
 ## Requirements
 
-* [buildah](https://buildah.io/) for building container and binaries
-* [helm](https://helm.sh/)
-* [kubernetes](https://kubernetes.io/) or [k0s](https://k0sproject.io/) which is more lightweight
-* [cert-manager](https://cert-manager.io/)
+- [buildah](https://buildah.io/) for building container and binaries
+- [helm](https://helm.sh/)
+- [kubernetes](https://kubernetes.io/) or [k0s](https://k0sproject.io/) which is more lightweight
+- [cert-manager](https://cert-manager.io/)
 
 ## Installation
 
@@ -34,6 +34,7 @@ helm install --namespace cert-manager cert-manager-webhook-hostsharing cert-mana
 ```bash
 helm install --namespace cert-manager cert-manager-webhook-hostsharing deploy/cert-manager-webhook-hostsharing
 ```
+
 **Note**: The kubernetes resources used to install the Webhook should be deployed within the same namespace as the cert-manager.
 
 To uninstall the webhook run
@@ -74,12 +75,12 @@ The config file should look similar like
 zone-file: "/home/pacs/xyz00/users/acme/doms/acme.example.com/etc/pri.acme.example.com"
 api-key: "random string"
 template:
-    head: '{DEFAULT_ZONEFILE}'
+  head: "{DEFAULT_ZONEFILE}"
 ```
 
 ### Cluster Issuer
 
-You are going to need an *Issuer* or *ClusterIssuer* on your kubernetes cluster to get all those pieces running. This readme can only provide an example. For more details, please consider the [documentation about webhooks](https://cert-manager.io/docs/configuration/acme/dns01/webhook/) of the cert-manager project.
+You are going to need an _Issuer_ or _ClusterIssuer_ on your kubernetes cluster to get all those pieces running. This readme can only provide an example. For more details, please consider the [documentation about webhooks](https://cert-manager.io/docs/configuration/acme/dns01/webhook/) of the cert-manager project.
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -93,19 +94,19 @@ spec:
       name: letsencrypt-staging
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     solvers:
-    - dns01:
-        cnameStrategy: Follow
-        webhook:
-          config:
-            apiKey: "random string"
-            baseUrl: https://acme.example.com/fastcgi-bin/updater
-          groupName: acme.example.com
-          solverName: hostsharing
+      - dns01:
+          cnameStrategy: Follow
+          webhook:
+            config:
+              apiKey: "random string"
+              baseUrl: https://acme.example.com/fastcgi-bin/updater
+            groupName: acme.example.com
+            solverName: hostsharing
 ```
 
 ## How to...
 
-### Use *let's encrypt* certificates within an intranet
+### Use _let's encrypt_ certificates within an intranet
 
 TBD
 

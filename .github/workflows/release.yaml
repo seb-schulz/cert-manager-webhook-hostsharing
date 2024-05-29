@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 jobs:
   release:
     if: github.repository == 'seb-schulz/cert-manager-webhook-hostsharing'
