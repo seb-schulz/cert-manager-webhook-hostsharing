@@ -25,7 +25,7 @@ git config user.email "${git_email}"
 git config user.name "${git_name}"
 
 helm package ${rootdir}/deploy/cert-manager-webhook-hostsharing
-git add cert-manager-webhook-hostsharing-${VERSION}.tgz
+git add cert-manager-webhook-hostsharing-v${VERSION}.tgz
 
 helm repo index . --url ${WEBPAGE_URL}
 
