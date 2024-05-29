@@ -25,7 +25,10 @@ git config user.email "${git_email}"
 git config user.name "${git_name}"
 
 helm package ${rootdir}/deploy/cert-manager-webhook-hostsharing
+git add cert-manager-webhook-hostsharing-${VERSION}.tgz
+
 helm repo index . --url ${WEBPAGE_URL}
+
 git commit -a -m "Release version ${VERSION}"
 git remote -v
 git push origin gh-pages
