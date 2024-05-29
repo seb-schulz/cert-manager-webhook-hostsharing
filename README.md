@@ -2,57 +2,124 @@
   <img src="https://raw.githubusercontent.com/cert-manager/cert-manager/d53c0b9270f8cd90d908460d69502694e1838f5f/logo/logo-small.png" height="256" width="256" alt="cert-manager project logo" />
 </p>
 
-# ACME webhook example
+# ACME webhook for Hostsharing
 
-The ACME issuer type supports an optional 'webhook' solver, which can be used
-to implement custom DNS01 challenge solving logic.
+This solver can be used when you want to use cert-manager with [Hostsharing e.G.](https://www.hostsharing.net/).
 
-This is useful if you need to use cert-manager with a DNS provider that is not
-officially supported in cert-manager core.
+## Requirements
 
-## Why not in core?
+- [buildah](https://buildah.io/) for building container and binaries
+- [helm](https://helm.sh/)
+- [kubernetes](https://kubernetes.io/) or [k0s](https://k0sproject.io/) which is more lightweight
+- [cert-manager](https://cert-manager.io/)
 
-As the project & adoption has grown, there has been an influx of DNS provider
-pull requests to our core codebase. As this number has grown, the test matrix
-has become un-maintainable and so, it's not possible for us to certify that
-providers work to a sufficient level.
+## Installation
 
-By creating this 'interface' between cert-manager and DNS providers, we allow
-users to quickly iterate and test out new integrations, and then packaging
-those up themselves as 'extensions' to cert-manager.
+### cert-manager
 
-We can also then provide a standardised 'testing framework', or set of
-conformance tests, which allow us to validate the a DNS provider works as
-expected.
+Follow the [instructions](https://cert-manager.io/docs/installation/) using the cert-manager documentation to install it within your cluster.
 
-## Creating your own webhook
+### Webhook
 
-Webhook's themselves are deployed as Kubernetes API services, in order to allow
-administrators to restrict access to webhooks with Kubernetes RBAC.
+#### Using public helm chart
 
-This is important, as otherwise it'd be possible for anyone with access to your
-webhook to complete ACME challenge validations and obtain certificates.
+```bash
+helm repo add cert-manager-webhook-hostsharing https://seb-schulz.github.io/cert-manager-webhook-hostsharing
+# Replace the groupName value with your desired domain
+helm install --namespace cert-manager cert-manager-webhook-hostsharing cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing --set groupName=acme.yourdomain.tld
+```
 
-To make the set up of these webhook's easier, we provide a template repository
-that can be used to get started quickly.
+#### From local checkout
 
-### Creating your own repository
+```bash
+helm install --namespace cert-manager cert-manager-webhook-hostsharing deploy/cert-manager-webhook-hostsharing
+```
+
+**Note**: The kubernetes resources used to install the Webhook should be deployed within the same namespace as the cert-manager.
+
+To uninstall the webhook run
+
+```bash
+helm uninstall --namespace cert-manager cert-manager-webhook-hostsharing
+```
+
+TODO: How to generate api token
+
+### On hostsharing
+
+Setup a domain with [HSAdmin](https://admin.hostsharing.net/). It is recommeded to setup a user as well. Please consider the [documentation](https://www.hostsharing.net/doc/) for more information. In this README we are going to use the user `xyz00-acme` and the domain `acme.example.com` as an example.
+
+1. Download **updater** component from [latest release page](https://github.com/seb-schulz/cert-manager-webhook-hostsharing/releases/latest)
+2. Move **updater** component to `~/doms/acme.example.com/fastcgi-ssl/`
+3. Make **updater** executable
+4. Run `updater -config > config.yaml` to generate config file
+5. Generate an API key (e.x. `openssl rand -hex 32`) and update config file accordingly
+
+The following shell script does all steps except generating an API key.
+
+```shell
+domain=acme.example.com
+url=https://github.com/seb-schulz/cert-manager-webhook-hostsharing/releases/latest/download
+ver=$(curl -L $url/version.txt)
+curl -LO "$url/updater-$ver-amd64"
+curl -LO "$url/updater-$ver-amd64.sha256sum.txt"
+sha256sum -c updater-$ver-amd64.sha256sum.txt && rm updater-$ver-amd64.sha256sum.txt
+chmod +x updater-$ver-amd64
+echo mv updater-$ver-amd64 ~/doms/$domain/fastcgi-ssl/updater
+~/doms/$domain/fastcgi-ssl/updater -config > ~/doms/$domain/fastcgi-ssl/config.yaml
+```
+
+The config file should look similar like
+
+```yaml
+zone-file: "/home/pacs/xyz00/users/acme/doms/acme.example.com/etc/pri.acme.example.com"
+api-key: "random string"
+template:
+  head: "{DEFAULT_ZONEFILE}"
+```
+
+### Cluster Issuer
+
+You are going to need an _Issuer_ or _ClusterIssuer_ on your kubernetes cluster to get all those pieces running. This readme can only provide an example. For more details, please consider the [documentation about webhooks](https://cert-manager.io/docs/configuration/acme/dns01/webhook/) of the cert-manager project.
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    email: your-email@example.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          cnameStrategy: Follow
+          webhook:
+            config:
+              apiKey: "random string"
+              baseUrl: https://acme.example.com/fastcgi-bin/updater
+            groupName: acme.example.com
+            solverName: hostsharing
+```
+
+## How to...
+
+### Use _let's encrypt_ certificates within an intranet
+
+TBD
+
+## Development
+
+You can build your own binaries with `make build` and push the container to your private registry with `make push IMAGE_NAME=registry.example.com/cert-manager-webhook-hostsharing`.
+
+All variables of the makefile, you can overwrite by creating a `Makefile.variables` file.
 
 ### Running the test suite
-
-All DNS providers **must** run the DNS01 provider conformance testing suite,
-else they will have undetermined behaviour when used with cert-manager.
-
-**It is essential that you configure and run the test suite when creating a
-DNS01 webhook.**
-
-An example Go test file has been provided in [main_test.go](https://github.com/cert-manager/webhook-example/blob/master/main_test.go).
 
 You can run the test suite with:
 
 ```bash
-$ TEST_ZONE_NAME=example.com. make test
+$ make test
 ```
-
-The example file has a number of areas you must fill in and replace with your
-own options in order for tests to pass.
