@@ -2,16 +2,16 @@ apiVersion: v1
 entries:
   cert-manager-webhook-hostsharing:
   - apiVersion: v1
-    created: "2024-05-29T06:18:28.124059681Z"
+    created: "2024-05-29T13:54:11.378883925Z"
     description: A Helm chart for Kubernetes
-    digest: 882cfb13e07293cfa7bf918926c1ea2333d8614c5a35689a363194bc849dcd82
+    digest: abff1ba16b5cd1f7cc81b239caa1897994b888a359601112402504cad113ba0d
     icon: https://www.hostsharing.net/apple-touch-icon.png
     name: cert-manager-webhook-hostsharing
     urls:
-    - https://seb-schulz.github.io/cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing-0.3.0.tgz
-    version: 0.3.0
+    - https://seb-schulz.github.io/cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing-0.3.3.tgz
+    version: 0.3.3
   - apiVersion: v1
-    created: "2024-05-29T06:18:28.123827626Z"
+    created: "2024-05-29T13:54:11.378384838Z"
     description: A Helm chart for Kubernetes
     digest: 07dad966f49150bcb92044e10864cd962fa2a4a360c67bbfe3a00d9694880d44
     name: cert-manager-webhook-hostsharing
@@ -20,7 +20,7 @@ entries:
     version: 0.2.0
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2024-05-29T06:18:28.123587687Z"
+    created: "2024-05-29T13:54:11.377917672Z"
     description: A Helm chart for Kubernetes
     digest: 658fe129d1cfe94ffa5d751d09887988dc349f92a62e40fc27633f4433bfd786
     name: cert-manager-webhook-hostsharing
@@ -29,11 +29,11 @@ entries:
     version: 0.1.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2024-05-29T06:18:28.123336316Z"
+    created: "2024-05-29T13:54:11.377508826Z"
     description: A Helm chart for Kubernetes
     digest: 06a3d285be7faa8ce7c45bd10a644237be2e323f3f668878eef85f289ac7f751
     name: cert-manager-webhook-hostsharing
     urls:
     - https://seb-schulz.github.io/cert-manager-webhook-hostsharing/cert-manager-webhook-hostsharing-0.1.0.tgz
     version: 0.1.0
-generated: "2024-05-29T06:18:28.122750509Z"
+generated: "2024-05-29T13:54:11.376989352Z"
