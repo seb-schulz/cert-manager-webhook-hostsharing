@@ -1,0 +1,17 @@
+{
+    "name": "Helm Tooling",
+    "id": "helm-tooling",
+    "version": "1.0.0",
+    "description": "Installs the Helm tool",
+    "options": {
+      "version": {
+        "type": "string",
+        "proposals": [
+          "latest",
+          "v3.7.1"
+        ],
+        "default": "latest",
+        "description": "Select or enter a Chart Testing version. (Available versions here: https://github.com/helm/chart-testing/releases)"
+      }
+    }
+  }
